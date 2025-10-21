@@ -23,8 +23,6 @@ import {
   Zap,
   Camera,
   TrendingDown,
-  Moon,
-  Sun,
   X,
 } from "lucide-react";
 import { Flow, Step, LS_KEY, createInitialFlow, AUTO_PLAY_TIMINGS } from "@/lib/agent-types";
@@ -37,7 +35,6 @@ import { Toast } from "@/components/agent/Toast";
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAgentFlow, setShowAgentFlow] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
   
   // Agent flow state
   const [flow, setFlow] = useState<Flow>(createInitialFlow());
@@ -281,20 +278,20 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={`flex h-screen ${darkMode ? 'bg-black text-white' : 'bg-white text-gray-900'} overflow-hidden`}>
+    <div className="flex h-screen bg-black text-white overflow-hidden">
       {/* Sidebar */}
-      <div className={`w-72 ${darkMode ? 'bg-[#1a1a1a]' : 'bg-gray-50'} flex flex-col ${darkMode ? 'border-r border-gray-800' : 'border-r border-gray-200'}`}>
+      <div className="w-72 bg-[#1a1a1a] flex flex-col border-r border-gray-800">
         {/* Sidebar Header */}
-        <div className={`p-4 ${darkMode ? 'border-b border-gray-800' : 'border-b border-gray-200'}`}>
+        <div className="p-4 border-b border-gray-800">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-lg flex items-center justify-center">
               <span className="text-white text-xl font-bold">🍀</span>
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className={`text-sm font-semibold truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              <h2 className="text-sm font-semibold text-white truncate">
                 Olympia Greek
               </h2>
-              <p className={`text-xs truncate ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              <p className="text-xs text-gray-400 truncate">
                 admin@olympiagreek.com
               </p>
             </div>
@@ -307,8 +304,8 @@ export default function Dashboard() {
             {!showAgentFlow ? (
               <>
                 <div className="flex items-center justify-between mb-2">
-                  <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Spaces</span>
-                  <button className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`}>
+                  <span className="text-xs font-medium text-gray-400">Spaces</span>
+                  <button className="text-gray-400 hover:text-white">
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
@@ -319,12 +316,8 @@ export default function Dashboard() {
                       key={idx}
                       className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                         item.active
-                          ? darkMode 
-                            ? "bg-[#2a2a2a] text-white font-medium"
-                            : "bg-gray-200 text-gray-900 font-medium"
-                          : darkMode
-                          ? "text-gray-400 hover:bg-[#2a2a2a] hover:text-white"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                          ? "bg-[#2a2a2a] text-white font-medium"
+                          : "text-gray-400 hover:bg-[#2a2a2a] hover:text-white"
                       }`}
                     >
                       <item.icon className="w-4 h-4" />
@@ -334,18 +327,14 @@ export default function Dashboard() {
                 </nav>
 
                 <div className="mb-2">
-                  <span className={`text-xs font-medium ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>History</span>
+                  <span className="text-xs font-medium text-gray-500">History</span>
                 </div>
 
                 <nav className="space-y-1">
                   {historyItems.map((item, idx) => (
                     <button
                       key={idx}
-                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                        darkMode
-                          ? "text-gray-300 hover:bg-[#2a2a2a] hover:text-white"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                      }`}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-[#2a2a2a] hover:text-white transition-colors"
                     >
                       <item.icon className="w-4 h-4" />
                       {item.name}
@@ -356,7 +345,7 @@ export default function Dashboard() {
             ) : (
               <>
                 <div className="mb-2">
-                  <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Progress</span>
+                  <span className="text-xs font-medium text-gray-400">Progress</span>
                 </div>
 
                 <ProgressTimeline
@@ -370,9 +359,9 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* User Profile with Dark Mode Toggle */}
-        <div className={`p-4 ${darkMode ? 'border-t border-gray-800' : 'border-t border-gray-200'}`}>
-          <div className="flex items-center gap-3 mb-3">
+        {/* User Profile */}
+        <div className="p-4 border-t border-gray-800">
+          <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gray-600 overflow-hidden">
               <img
                 src="https://api.dicebear.com/7.x/avataaars/svg?seed=Matt"
@@ -381,33 +370,20 @@ export default function Dashboard() {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Matt</p>
-              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Owner</p>
+              <p className="text-sm font-medium text-white">Matt</p>
+              <p className="text-xs text-gray-400">Owner</p>
             </div>
           </div>
-          
-          {/* Dark Mode Toggle */}
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-              darkMode
-                ? "bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white"
-                : "bg-gray-200 hover:bg-gray-300 text-gray-900"
-            }`}
-          >
-            {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            <span>{darkMode ? "Light Mode" : "Dark Mode"}</span>
-          </button>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className={`${darkMode ? 'bg-black border-gray-800' : 'bg-white border-gray-200'} border-b px-6 py-3`}>
+        <header className="bg-black border-b border-gray-800 px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <h1 className={`text-lg font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              <h1 className="text-lg font-medium text-white">
                 {showAgentFlow ? "Troubleshooting: Missing Transfer" : "Home"}
               </h1>
             </div>
@@ -415,7 +391,7 @@ export default function Dashboard() {
               <Button
                 variant="secondary"
                 size="sm"
-                className={`${darkMode ? 'bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'} border-none rounded-full`}
+                className="bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-none rounded-full"
               >
                 <span className="text-green-400 mr-2">●</span>
                 Store info
@@ -423,7 +399,7 @@ export default function Dashboard() {
               <Button
                 variant="secondary"
                 size="sm"
-                className={`${darkMode ? 'bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'} border-none rounded-full`}
+                className="bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-none rounded-full"
               >
                 <span className="text-red-400 mr-2">●</span>
                 Employee info
@@ -431,7 +407,7 @@ export default function Dashboard() {
               <Button
                 variant="secondary"
                 size="sm"
-                className={`${darkMode ? 'bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'} border-none rounded-full`}
+                className="bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-none rounded-full"
               >
                 <span className="text-green-400 mr-2">●</span>
                 Device info
@@ -455,33 +431,33 @@ export default function Dashboard() {
         )}
 
         {/* Content Area */}
-        <main className={`flex-1 overflow-y-auto ${darkMode ? 'bg-[#0a0a0a]' : 'bg-gray-50'} pb-8`}>
+        <main className="flex-1 overflow-y-auto bg-[#0a0a0a] pb-8">
           <div className="max-w-5xl mx-auto px-8 pt-16">
             {!showAgentFlow ? (
               <>
                 {/* Main Heading */}
-                <h2 className={`text-3xl font-semibold text-center mb-8 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <h2 className="text-3xl font-semibold text-white text-center mb-8">
                   How can we help you run your business?
                 </h2>
 
                 {/* Search Bar */}
-                <form onSubmit={handleSearchSubmit} className={`${darkMode ? 'bg-[#1a1a1a] border-gray-800' : 'bg-white border-gray-200'} rounded-2xl p-4 mb-6 border`}>
+                <form onSubmit={handleSearchSubmit} className="bg-[#1a1a1a] rounded-2xl p-4 mb-6 border border-gray-800">
                   <input
                     type="text"
                     placeholder="Try: 'My transfer is missing' or 'Where is my deposit?'"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className={`bg-transparent border-none outline-none ${darkMode ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'} w-full mb-4`}
+                    className="bg-transparent border-none outline-none text-white placeholder-gray-500 w-full mb-4"
                   />
                   <div className="flex items-center gap-3 flex-wrap">
-                    <button type="button" className={`w-10 h-10 ${darkMode ? 'bg-[#2a2a2a] hover:bg-[#3a3a3a]' : 'bg-gray-100 hover:bg-gray-200'} rounded-full flex items-center justify-center transition-colors`}>
-                      <Plus className={`w-5 h-5 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+                    <button type="button" className="w-10 h-10 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-full flex items-center justify-center transition-colors">
+                      <Plus className="w-5 h-5 text-gray-300" />
                     </button>
                     <Button
                       type="button"
                       variant="secondary"
                       size="sm"
-                      className={`${darkMode ? 'bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'} border-none rounded-full`}
+                      className="bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-none rounded-full"
                     >
                       New invoice
                     </Button>
@@ -489,7 +465,7 @@ export default function Dashboard() {
                       type="button"
                       variant="secondary"
                       size="sm"
-                      className={`${darkMode ? 'bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'} border-none rounded-full`}
+                      className="bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-none rounded-full"
                     >
                       New menu
                     </Button>
@@ -497,19 +473,19 @@ export default function Dashboard() {
                       type="button"
                       variant="secondary"
                       size="sm"
-                      className={`${darkMode ? 'bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'} border-none rounded-full`}
+                      className="bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-none rounded-full"
                     >
                       View orders
                     </Button>
-                    <button type="button" className={`w-10 h-10 ${darkMode ? 'bg-[#2a2a2a] hover:bg-[#3a3a3a]' : 'bg-gray-100 hover:bg-gray-200'} rounded-full flex items-center justify-center transition-colors`}>
-                      <MoreHorizontal className={`w-5 h-5 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+                    <button type="button" className="w-10 h-10 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-full flex items-center justify-center transition-colors">
+                      <MoreHorizontal className="w-5 h-5 text-gray-300" />
                     </button>
                     <div className="flex-1"></div>
-                    <button type="button" className={`w-10 h-10 ${darkMode ? 'bg-[#2a2a2a] hover:bg-[#3a3a3a]' : 'bg-gray-100 hover:bg-gray-200'} rounded-full flex items-center justify-center transition-colors`}>
-                      <Mic className={`w-5 h-5 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+                    <button type="button" className="w-10 h-10 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-full flex items-center justify-center transition-colors">
+                      <Mic className="w-5 h-5 text-gray-300" />
                     </button>
-                    <button type="submit" className={`w-10 h-10 ${darkMode ? 'bg-[#2a2a2a] hover:bg-[#3a3a3a]' : 'bg-gray-100 hover:bg-gray-200'} rounded-full flex items-center justify-center transition-colors`}>
-                      <MoveUp className={`w-5 h-5 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+                    <button type="submit" className="w-10 h-10 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-full flex items-center justify-center transition-colors">
+                      <MoveUp className="w-5 h-5 text-gray-300" />
                     </button>
                   </div>
                 </form>
@@ -521,12 +497,8 @@ export default function Dashboard() {
                       key={idx}
                       className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                         idx === 0
-                          ? darkMode
-                            ? "bg-[#2a2a2a] text-white"
-                            : "bg-gray-200 text-gray-900"
-                          : darkMode
-                          ? "text-gray-400 hover:bg-[#1a1a1a] hover:text-white"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                          ? "bg-[#2a2a2a] text-white"
+                          : "text-gray-400 hover:bg-[#1a1a1a] hover:text-white"
                       }`}
                     >
                       {tab}
@@ -537,15 +509,15 @@ export default function Dashboard() {
                 {/* Dashboard Cards */}
                 <div className="space-y-4">
                   {/* Financial Overview Card */}
-                  <div className={`${darkMode ? 'bg-[#1a1a1a] border-gray-800 hover:border-gray-700' : 'bg-white border-gray-200 hover:border-gray-300'} rounded-2xl p-6 border transition-colors cursor-pointer group`}>
+                  <div className="bg-[#1a1a1a] rounded-2xl p-6 border border-gray-800 hover:border-gray-700 transition-colors cursor-pointer group">
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center gap-3">
-                        <Building2 className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                        <h3 className={`text-base font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <Building2 className="w-5 h-5 text-gray-400" />
+                        <h3 className="text-base font-semibold text-white">
                           Financial overview
                         </h3>
                       </div>
-                      <button className={`${darkMode ? 'text-gray-400 group-hover:text-white' : 'text-gray-400 group-hover:text-gray-900'} transition-colors`}>
+                      <button className="text-gray-400 group-hover:text-white transition-colors">
                         <svg
                           width="20"
                           height="20"
@@ -565,24 +537,24 @@ export default function Dashboard() {
                     </div>
                     <div className="grid grid-cols-3 gap-6">
                       <div>
-                        <p className={`text-2xl font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <p className="text-2xl font-bold text-white mb-1">
                           $5,212.90
                         </p>
-                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>In sales today</p>
+                        <p className="text-sm text-gray-400">In sales today</p>
                       </div>
                       <div>
-                        <p className={`text-2xl font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <p className="text-2xl font-bold text-white mb-1">
                           $21,990.14
                         </p>
-                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <p className="text-sm text-gray-400">
                           In 2 checking accounts
                         </p>
                       </div>
                       <div>
-                        <p className={`text-2xl font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <p className="text-2xl font-bold text-white mb-1">
                           $922.00
                         </p>
-                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <p className="text-sm text-gray-400">
                           Outgoing payroll today
                         </p>
                       </div>
@@ -590,24 +562,24 @@ export default function Dashboard() {
                   </div>
 
                   {/* Happy Hour Card */}
-                  <div className={`${darkMode ? 'bg-[#1a1a1a] border-gray-800 hover:border-gray-700' : 'bg-white border-gray-200 hover:border-gray-300'} rounded-2xl p-6 border transition-colors cursor-pointer group`}>
+                  <div className="bg-[#1a1a1a] rounded-2xl p-6 border border-gray-800 hover:border-gray-700 transition-colors cursor-pointer group">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-4 flex-1">
-                        <div className={`w-10 h-10 ${darkMode ? 'bg-[#2a2a2a]' : 'bg-gray-100'} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                        <div className="w-10 h-10 bg-[#2a2a2a] rounded-lg flex items-center justify-center flex-shrink-0">
                           <Zap className="w-5 h-5 text-yellow-400" />
                         </div>
                         <div className="flex-1">
-                          <h3 className={`text-base font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          <h3 className="text-base font-semibold text-white mb-1">
                             Add a Happy Hour to your restaurant
                           </h3>
-                          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          <p className="text-sm text-gray-400">
                             You could benefit from a Happy Hour menu to drive
                             business at slower hours.
                           </p>
                         </div>
                         <div className="flex items-center gap-4 flex-shrink-0">
                           <span className="text-4xl">🍻</span>
-                          <button className={`${darkMode ? 'text-gray-400 group-hover:text-white' : 'text-gray-400 group-hover:text-gray-900'} transition-colors`}>
+                          <button className="text-gray-400 group-hover:text-white transition-colors">
                             <svg
                               width="20"
                               height="20"
@@ -630,24 +602,24 @@ export default function Dashboard() {
                   </div>
 
                   {/* Daily Cash Snapshot Card */}
-                  <div className={`${darkMode ? 'bg-[#1a1a1a] border-gray-800 hover:border-gray-700' : 'bg-white border-gray-200 hover:border-gray-300'} rounded-2xl p-6 border transition-colors cursor-pointer group`}>
+                  <div className="bg-[#1a1a1a] rounded-2xl p-6 border border-gray-800 hover:border-gray-700 transition-colors cursor-pointer group">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-4 flex-1">
-                        <div className={`w-10 h-10 ${darkMode ? 'bg-[#2a2a2a]' : 'bg-gray-100'} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                          <Camera className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                        <div className="w-10 h-10 bg-[#2a2a2a] rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Camera className="w-5 h-5 text-gray-400" />
                         </div>
                         <div className="flex-1">
-                          <h3 className={`text-base font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          <h3 className="text-base font-semibold text-white mb-2">
                             Daily cash snapshot
                           </h3>
-                          <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                          <p className="text-sm text-gray-300 leading-relaxed">
                             Good morning! Yesterday&apos;s sales came in at $2,300
                             (about 5% above your usual). Payroll of $4,200 is due
                             Friday. The veggie promo gave lunch a nice +12% boost.
                             No staffing or hardware issues were detected overnight.
                           </p>
                         </div>
-                        <button className={`${darkMode ? 'text-gray-400 group-hover:text-white' : 'text-gray-400 group-hover:text-gray-900'} transition-colors flex-shrink-0`}>
+                        <button className="text-gray-400 group-hover:text-white transition-colors flex-shrink-0">
                           <svg
                             width="20"
                             height="20"
@@ -669,23 +641,23 @@ export default function Dashboard() {
                   </div>
 
                   {/* Transaction Summary Card */}
-                  <div className={`${darkMode ? 'bg-[#1a1a1a] border-gray-800 hover:border-gray-700' : 'bg-white border-gray-200 hover:border-gray-300'} rounded-2xl p-6 border transition-colors cursor-pointer group`}>
+                  <div className="bg-[#1a1a1a] rounded-2xl p-6 border border-gray-800 hover:border-gray-700 transition-colors cursor-pointer group">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-4 flex-1">
-                        <div className={`w-10 h-10 ${darkMode ? 'bg-[#2a2a2a]' : 'bg-gray-100'} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                          <TrendingDown className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                        <div className="w-10 h-10 bg-[#2a2a2a] rounded-lg flex items-center justify-center flex-shrink-0">
+                          <TrendingDown className="w-5 h-5 text-gray-400" />
                         </div>
                         <div className="flex-1">
-                          <h3 className={`text-base font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          <h3 className="text-base font-semibold text-white mb-2">
                             Transaction summary
                           </h3>
-                          <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                          <p className="text-sm text-gray-300">
                             Yesterday&apos;s sales reached $2,480, about average.
                             The dinner rush had 24 more covers than you usually see
                             on Thursdays.
                           </p>
                         </div>
-                        <button className={`${darkMode ? 'text-gray-400 group-hover:text-white' : 'text-gray-400 group-hover:text-gray-900'} transition-colors flex-shrink-0`}>
+                        <button className="text-gray-400 group-hover:text-white transition-colors flex-shrink-0">
                           <svg
                             width="20"
                             height="20"
@@ -714,19 +686,15 @@ export default function Dashboard() {
                   {/* Exit Button */}
                   <button
                     onClick={handleExitAgentFlow}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors ${
-                      darkMode
-                        ? "text-gray-400 hover:text-white hover:bg-[#1a1a1a]"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                    }`}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-[#1a1a1a] transition-colors"
                   >
                     <X className="w-4 h-4" />
                     Exit troubleshooting
                   </button>
 
                   {/* Intro Message */}
-                  <div className={`${darkMode ? 'bg-[#1a1a1a]' : 'bg-white'} rounded-2xl p-6 border border-blue-500/30`}>
-                    <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <div className="bg-[#1a1a1a] rounded-2xl p-6 border border-blue-500/30">
+                    <p className="text-sm text-gray-300 leading-relaxed">
                       I'll help you locate your missing transfer. This process is{" "}
                       <span className="text-blue-400 font-medium">transparent</span> (you'll see every step),{" "}
                       <span className="text-green-400 font-medium">interruptible</span> (pause or stop anytime), and{" "}
@@ -755,15 +723,15 @@ export default function Dashboard() {
 
                   {/* Completion Message */}
                   {flow.completedAt && (
-                    <div className={`${darkMode ? 'bg-green-900/20' : 'bg-green-50'} rounded-2xl p-6 border border-green-500/30 animate-in fade-in slide-in-from-bottom-4 duration-500`}>
+                    <div className="bg-green-900/20 rounded-2xl p-6 border border-green-500/30 animate-in fade-in slide-in-from-bottom-4 duration-500">
                       <h3 className="text-lg font-semibold text-green-400 mb-2">
                         ✓ Troubleshooting Complete
                       </h3>
-                      <p className={`text-sm mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      <p className="text-sm text-gray-300 mb-3">
                         Transfer located and successfully requeued. You should see the deposit in your bank account by Oct 22.
                         The delay was caused by weekend processing at your bank.
                       </p>
-                      <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      <p className="text-xs text-gray-400">
                         💡 <strong>What happened:</strong> Your transfer was queued on Friday evening and fell into the weekend processing window. 
                         Banks don't process ACH transfers on weekends, so it was automatically requeued for Monday morning.
                       </p>
