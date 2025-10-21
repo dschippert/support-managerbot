@@ -2,6 +2,8 @@
 
 A faithful recreation of the Manager Bot Support dashboard interface using Next.js, React, Tailwind CSS, and shadcn/ui.
 
+Vibe coding prototypes for support within Managerbot.
+
 ## Features
 
 - **Dark Theme**: Modern black theme with subtle gray accents
@@ -98,4 +100,3 @@ npm start
 ## License
 
 This project is a design recreation for educational purposes.
-
