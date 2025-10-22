@@ -761,7 +761,7 @@ export default function Dashboard() {
           <div className={`transition-all duration-500 ${showChat ? 'opacity-0 translate-y-[-20px] pointer-events-none' : 'opacity-100'}`}>
             <div className="w-[740px] mx-auto px-0 pt-16">
               {/* Main Heading */}
-              <h2 className="text-3xl font-semibold text-gray-900 text-center mb-8">
+              <h2 className="font-semibold text-gray-900 text-left mb-8" style={{ fontSize: '24px' }}>
                 How can we help you run your business?
               </h2>
             </div>
