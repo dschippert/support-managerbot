@@ -43,6 +43,7 @@ export default function Dashboard() {
   const [awaitingApproval, setAwaitingApproval] = useState(false);
   const [awaitingMerchant, setAwaitingMerchant] = useState(false);
   const [inputAtBottom, setInputAtBottom] = useState(false);
+  const [conversationComplete, setConversationComplete] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const navItems = [
@@ -435,11 +436,96 @@ export default function Dashboard() {
       type: "text",
       content: "Is there anything else I can help you with?"
     });
+    
+    // Enable follow-up questions
+    setConversationComplete(true);
+  };
+  
+  // Handle follow-up questions
+  const handleFollowUpQuestion = async (question: string) => {
+    const query = question.toLowerCase();
+    
+    // Check if it's a cutoff/processing time question
+    if (query.includes("cutoff") || 
+        query.includes("deadline") ||
+        query.includes("processing time") ||
+        query.includes("processing hours") ||
+        query.includes("what time") ||
+        query.includes("when do transfers") ||
+        query.includes("bank hours") ||
+        query.includes("transfer schedule")) {
+      
+      // Add user message
+      addMessage({
+        role: "user",
+        type: "text",
+        content: question
+      });
+      
+      // Thinking sequence with progression
+      await delay(600);
+      const thinkingMsg = addMessage({
+        role: "system",
+        type: "text",
+        content: "Thinking..."
+      });
+      
+      await delay(800);
+      setMessages(prev => prev.map(m => 
+        m.id === thinkingMsg.id 
+          ? { ...m, content: "Searching the web..." }
+          : m
+      ));
+      
+      await delay(1200);
+      setMessages(prev => prev.map(m => 
+        m.id === thinkingMsg.id 
+          ? { ...m, content: "Searching First National Bank..." }
+          : m
+      ));
+      
+      await delay(1500);
+      setMessages(prev => prev.map(m => 
+        m.id === thinkingMsg.id 
+          ? { ...m, content: "Done." }
+          : m
+      ));
+      
+      // Show the response
+      await delay(500);
+      addMessage({
+        role: "agent",
+        type: "text",
+        content: "I checked your bank's ACH processing schedule. First National Bank's cutoff for same-day ACH is 2:00 PM ET on weekdays. Transfers submitted after that time are processed the next business day."
+      });
+    } else {
+      // Generic response for other questions
+      addMessage({
+        role: "user",
+        type: "text",
+        content: question
+      });
+      
+      await delay(1000);
+      addMessage({
+        role: "agent",
+        type: "text",
+        content: "I'd be happy to help with that! For now, I'm specialized in handling transfer and payment issues. Is there anything else related to your transfer I can help with?"
+      });
+    }
   };
 
   // Handle search submit
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // If conversation is complete, handle as follow-up question
+    if (conversationComplete && searchQuery.trim()) {
+      handleFollowUpQuestion(searchQuery);
+      setSearchQuery("");
+      return;
+    }
+    
     const query = searchQuery.toLowerCase();
     
     if (query.includes("transfer") || 
@@ -879,7 +965,7 @@ export default function Dashboard() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 w-full text-base mb-5"
-                  disabled={showChat}
+                  disabled={showChat && !conversationComplete}
                 />
                 <div className="flex items-center gap-3">
                   <button type="button" className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-full flex items-center justify-center transition-colors border border-gray-200">
