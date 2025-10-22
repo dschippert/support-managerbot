@@ -168,7 +168,7 @@ export default function Dashboard() {
     addMessage({
       role: "agent",
       type: "approval-request",
-      content: "I can submit a request to retry this transfer.",
+      content: "This transfer missed your bank's Friday cutoff, so it was automatically reversed. I can start a new ACH to get it back on track.",
     });
     // Delay, then show action buttons as a separate right-aligned message
     await delay(800);
@@ -315,7 +315,7 @@ export default function Dashboard() {
       addMessage({
         role: "agent",
         type: "merchant-task",
-        content: "Please open your bank app and check for pending deposits dated Oct 20-21.",
+        content: "Before we move forward, can you check your bank app for a pending deposit?",
       });
       await delay(800);
       addMessage({
@@ -468,7 +468,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#224D2E' }}>
-              <Image src="/img/logomark.svg" alt="Logo" width={24} height={24} />
+              <Image src="https://raw.githubusercontent.com/dschippert/support-managerbot/ce15c74b02b418c28ceffa1842837429ac62e0c4/public/img/logomark.svg" alt="Logo" width={24} height={24} />
             </div>
             <div>
               <h1 className="text-sm font-semibold text-white">Olympia Greek</h1>

@@ -2,6 +2,7 @@
 
 import { Step } from "@/lib/chat-types";
 import { Check, Loader2 } from "lucide-react";
+import { TransferList } from "./TransferList";
 
 interface PlanCardProps {
   steps: Step[];
@@ -11,23 +12,23 @@ export function PlanCard({ steps }: PlanCardProps) {
   const getStepClasses = (status: Step["status"]) => {
     switch (status) {
       case "working":
-        return "border-gray-300 bg-gradient-to-r from-gray-50 via-white to-gray-50 animate-gradient";
+        return "border-white bg-gradient-to-r from-gray-50 via-white to-gray-50 animate-gradient";
       case "complete":
-        return "border-gray-200 bg-white";
+        return "border-white bg-white";
       case "failed":
-        return "border-gray-300 bg-gray-50";
+        return "border-white bg-gray-50";
       default:
-        return "border-gray-200 bg-white";
+        return "border-white bg-white";
     }
   };
 
   return (
-    <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="bg-white rounded-[24px] p-5 border border-gray-200 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-[85%]">
       <div className="space-y-2">
         {steps.map((step, idx) => (
           <div
             key={step.id}
-            className={`p-3 rounded-lg border transition-all duration-500 ease-out ${getStepClasses(step.status)} animate-in fade-in slide-in-from-top-2`}
+            className={`p-3 rounded-[16px] border transition-all duration-500 ease-out ${getStepClasses(step.status)} animate-in fade-in slide-in-from-top-2`}
             style={{ 
               animationDelay: `${idx * 150}ms`,
               backgroundSize: step.status === "working" ? "200% 100%" : "100% 100%"
@@ -58,6 +59,10 @@ export function PlanCard({ steps }: PlanCardProps) {
                    step.status === "complete" && step.result ? step.result : 
                    step.description}
                 </p>
+                {/* Show transfer list for step 2 when complete */}
+                {step.id === "check-transfers" && step.status === "complete" && (
+                  <TransferList />
+                )}
               </div>
             </div>
           </div>

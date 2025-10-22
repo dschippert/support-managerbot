@@ -58,7 +58,7 @@ export const createInitialSteps = (): Step[] => [
     description: "Comparing settlement queue with bank's pending depo...",
     status: "pending",
     duration: 2800,
-    result: "Found 3 transfers in past 7 days"
+    result: "Found 3 transfers in past 7 days."
   },
   {
     id: "check-processing",

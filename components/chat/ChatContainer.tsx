@@ -75,12 +75,12 @@ export function ChatContainer({
               <div className="max-w-[85%]">
                 <div className="bg-gray-100 text-gray-900 rounded-[32px] px-5 py-4">
                   <ApprovalPrompt
-                    title="Approval required"
+                    title=""
                     description={message.content}
                     details={[
                       "Initiate a new ACH transaction",
                       "Update your settlement queue",
-                      "Send confirmation via email"
+                      "Send a confirmation email once it's submitted"
                     ]}
                   />
                 </div>
@@ -118,10 +118,7 @@ export function ChatContainer({
             <div key={message.id} className="flex justify-start mb-4 animate-in fade-in slide-in-from-left-3 duration-300">
               <div className="max-w-[85%]">
                 <div className="bg-gray-100 text-gray-900 rounded-[32px] px-5 py-4">
-                  <div className="space-y-1.5">
-                    <p className="text-sm font-semibold text-gray-900">Manual Confirmation Needed</p>
-                    <p className="text-sm text-gray-900 leading-relaxed">{message.content}</p>
-                  </div>
+                  <p className="text-sm text-gray-900 leading-relaxed">{message.content}</p>
                 </div>
               </div>
             </div>
