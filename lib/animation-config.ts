@@ -1,32 +1,32 @@
 export const TIMINGS = {
   // Message animations
-  messageEnter: 200,
-  messageStagger: 100,
-  typingIndicator: 300,
-  thinkingBadge: 150,
+  messageEnter: 300,
+  messageStagger: 120,
+  typingIndicator: 500,
+  thinkingBadge: 200,
   
   // Agent thinking delays (randomized for realism)
-  thinkingMin: 2000,
-  thinkingMax: 6000,
+  thinkingMin: 2500,
+  thinkingMax: 4500,
   
   // Step execution
-  quickStep: 1500,  // e.g., "Checking connection"
-  mediumStep: 2500, // e.g., "Analyzing transfers"
-  longStep: 3500,   // e.g., "Processing request"
+  quickStep: 1800,  // e.g., "Checking connection"
+  mediumStep: 2800, // e.g., "Analyzing transfers"
+  longStep: 3800,   // e.g., "Processing request"
   
   // Status updates
-  statusMessageDelay: 800,
-  statusTransition: 300,
+  statusMessageDelay: 1200,
+  statusTransition: 400,
   
   // Interactions
-  buttonHover: 150,
-  buttonClick: 100,
-  checkboxCheck: 400,
+  buttonHover: 200,
+  buttonClick: 150,
+  checkboxCheck: 500,
   
   // Transitions
-  dashboardFade: 300,
-  inputSlide: 400,
-  scrollSmooth: 300,
+  dashboardFade: 400,
+  inputSlide: 500,
+  scrollSmooth: 400,
 };
 
 export const EASING = {

@@ -68,3 +68,46 @@
   }
 }
 
+@layer utilities {
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .animate-gradient {
+    animation: gradient-shift 3s ease infinite;
+  }
+
+  @keyframes text-shimmer {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+
+  .animate-text-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgb(107 114 128) 0%,
+      rgb(55 65 81) 25%,
+      rgb(107 114 128) 50%,
+      rgb(55 65 81) 75%,
+      rgb(107 114 128) 100%
+    );
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: text-shimmer 2s linear infinite;
+  }
+}
+

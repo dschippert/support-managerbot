@@ -23,10 +23,12 @@ import {
   Zap,
   Camera,
   TrendingDown,
+  ChevronRight,
 } from "lucide-react";
 import { Message, Step, createInitialSteps } from "@/lib/chat-types";
 import { getThinkingTime, getThinkingDetails, TIMINGS } from "@/lib/animation-config";
 import { ChatContainer } from "@/components/chat/ChatContainer";
+import Image from "next/image";
 
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,8 +37,12 @@ export default function Dashboard() {
   const [isTyping, setIsTyping] = useState(false);
   const [typingStatus, setTypingStatus] = useState<string | undefined>();
   const [currentPlan, setCurrentPlan] = useState<Step[]>([]);
+  const [pendingSteps, setPendingSteps] = useState<Step[]>([]);
+  const [phase2PlanMessageId, setPhase2PlanMessageId] = useState<string | null>(null);
+  const [phase2Steps, setPhase2Steps] = useState<Step[]>([]);
   const [awaitingApproval, setAwaitingApproval] = useState(false);
   const [awaitingMerchant, setAwaitingMerchant] = useState(false);
+  const [inputAtBottom, setInputAtBottom] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const navItems = [
@@ -72,158 +78,261 @@ export default function Dashboard() {
 
   // Main conversation orchestration
   const startConversation = async () => {
+    // First animate the input to bottom
+    setInputAtBottom(true);
+    
+    // Wait for input animation to complete
+    await delay(500);
+    
     setShowChat(true);
     
-    // User message
+    // User message appears
     addMessage({
       role: "user",
       type: "text",
       content: searchQuery,
     });
 
-    // Clear input
+    // Clear input but keep at bottom
     setSearchQuery("");
-
-    // Thinking + First response
-    await delay(TIMINGS.typingIndicator);
-    setIsTyping(true);
     
-    const thinkingTime1 = getThinkingTime();
-    await delay(thinkingTime1);
-    setIsTyping(false);
-    
+    // Initial response from agent
+    await delay(600);
     addMessage({
       role: "agent",
       type: "text",
-      content: "I'll help you locate that transfer. Let me check a few things for you.",
-      thinkingTime: thinkingTime1,
-      data: { thinkingDetails: getThinkingDetails("initial") }
+      content: "I can help you troubleshoot your missing transfer"
+    });
+    
+    // 1) Start with "Drafting a plan..."
+    await delay(800);
+    const draftingMsg = addMessage({
+      role: "system",
+      type: "text",
+      content: "Drafting a plan..."
     });
 
-    // Status message
-    await delay(TIMINGS.statusMessageDelay);
+    // Show typing indicator
+    await delay(400);
     setIsTyping(true);
-    setTypingStatus("Analyzing your account...");
+    setTypingStatus("Currently outlining steps to locate their missing transfer.");
     
-    // Thinking + Show plan
-    await delay(2000);
-    const thinkingTime2 = getThinkingTime();
+    // Planning time
+    await delay(2800);
     setTypingStatus(undefined);
-    await delay(thinkingTime2);
     setIsTyping(false);
-
-    const steps = createInitialSteps();
-    setCurrentPlan(steps);
     
-    addMessage({
-      role: "agent",
-      type: "plan",
-      content: "Here's my plan to troubleshoot this:",
-      thinkingTime: thinkingTime2,
-      data: { 
-        steps,
-        thinkingDetails: getThinkingDetails("planning")
-      }
-    });
-
-    // Start executing steps
-    await delay(1000);
+    // 2) Replace "Drafting a plan..." with "Plan complete."
+    await delay(300);
+    setMessages(prev => prev.map(m => 
+      m.id === draftingMsg.id 
+        ? { ...m, content: "Plan complete." }
+        : m
+    ));
+    
+    // 3) Show "Thought for Xs"
+    await delay(600);
+    const thinkingDuration = 3;
     addMessage({
       role: "system",
       type: "text",
-      content: "Starting troubleshooting..."
+      content: `Thought for ${thinkingDuration}s`
     });
 
-    await delay(500);
-    executeSteps(steps);
+    // Simulate thinking time
+    await delay(thinkingDuration * 1000);
+
+    // Start showing first 3 steps one by one
+    await delay(600);
+    const allSteps = createInitialSteps();
+    const steps = allSteps.slice(0, 3);
+    setPendingSteps(allSteps.slice(3));
+    
+    // Add a plan message first (PlanCard will use currentPlan fallback)
+    addMessage({
+      role: "agent",
+      type: "plan",
+      content: "",
+      thinkingTime: 0
+    });
+    
+    // Then add steps one by one
+    await addStepsOneByOne(steps);
+
+    // Start executing first 3 steps
+    await delay(400);
+    await executeSteps(steps);
+
+    // After executing 3 steps, prompt for approval
+    await delay(600);
+    addMessage({
+      role: "agent",
+      type: "approval-request",
+      content: "I can submit a request to retry this transfer.",
+    });
+    // Delay, then show action buttons as a separate right-aligned message
+    await delay(800);
+    addMessage({
+      role: "user",
+      type: "approval-actions",
+      content: "",
+    });
+    setAwaitingApproval(true);
+  };
+
+  // Add plan steps one by one with animation
+  const addStepsOneByOne = async (steps: Step[]) => {
+    for (let i = 0; i < steps.length; i++) {
+      await delay(500); // Pause between each step appearance
+      setCurrentPlan(prev => [...prev, steps[i]]);
+    }
   };
 
   // Execute troubleshooting steps
   const executeSteps = async (steps: Step[]) => {
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i];
-      
-      // Check if step requires approval
-      if (step.requiresApproval) {
-        // Show thinking before approval request
-        const thinkingTime = Math.floor(getThinkingTime() / 2); // Shorter thinking
-        await delay(thinkingTime);
-        
-        addMessage({
-          role: "agent",
-          type: "approval-request",
-          content: "I can submit a request to retry this transfer.",
-          thinkingTime,
-        });
-        
-        setAwaitingApproval(true);
-        return; // Wait for user response
-      }
-
-      // Check if step requires merchant action
-      if (step.requiresMerchantAction) {
-        addMessage({
-          role: "agent",
-          type: "merchant-task",
-          content: "Please open your bank app and check for pending deposits dated Oct 20-21.",
-        });
-        
-        setAwaitingMerchant(true);
-        return; // Wait for user confirmation
-      }
-
-      // Execute automated step
       await executeAutomatedStep(step, i);
     }
-
-    // All steps complete - show success
-    await showSuccess();
   };
 
   // Execute a single automated step
   const executeAutomatedStep = async (step: Step, index: number) => {
-    // Update step to working
+    // Small delay before starting
+    await delay(300);
+    
+    // Update step to working with smooth transition
     setCurrentPlan(prev => prev.map((s, idx) => 
       idx === index ? { ...s, status: "working" as const } : s
     ));
 
-    // Show working status
-    await delay(step.duration || TIMINGS.mediumStep);
+    // Show working status with realistic duration
+    const workDuration = step.duration || TIMINGS.mediumStep;
+    await delay(workDuration);
 
-    // Mark complete
+    // Mark complete with smooth animation
     setCurrentPlan(prev => prev.map((s, idx) => 
       idx === index ? { ...s, status: "complete" as const } : s
     ));
 
-    await delay(300); // Brief pause to see completion animation
+    // Pause to let user appreciate the checkmark animation
+    await delay(700);
+    
+    // Add subtle thinking between steps
+    if (index < 2) {
+      // Brief pause with typing indicator
+      setIsTyping(true);
+      await delay(600);
+      setIsTyping(false);
+      await delay(300);
+    }
+  };
+
+  // Helpers to manage steps inside a specific message (phase 2 plan)
+  const updatePhase2Steps = (next: Step[] | ((prev: Step[]) => Step[])) => {
+    // Maintain a local copy for reference, but actual rendering uses message-scoped steps
+    setPhase2Steps(prev => (typeof next === 'function' ? (next as (p: Step[]) => Step[])(prev) : next));
+  };
+
+  const executePhase2Step = async (index: number, duration: number) => {
+    updatePhase2Steps(prev => prev.map((s, i) => i === index ? { ...s, status: "working" as const } : s));
+    await delay(duration);
+    updatePhase2Steps(prev => prev.map((s, i) => i === index ? { ...s, status: "complete" as const } : s));
+    await delay(700);
+  };
+
+  // Execute a step by index within a specific plan message
+  const executeStepInMessage = async (messageId: string, index: number, duration: number) => {
+    updateMessageSteps(messageId, prev => prev.map((s, i) => i === index ? { ...s, status: "working" as const } : s));
+    await delay(duration);
+    updateMessageSteps(messageId, prev => prev.map((s, i) => i === index ? { ...s, status: "complete" as const } : s));
+    await delay(700);
+  };
+
+  // Generic helper: update steps for a specific message id
+  const updateMessageSteps = (messageId: string, updater: (prev: Step[]) => Step[]) => {
+    setMessages(prev => prev.map(m => {
+      if (m.id !== messageId) return m;
+      const current = m.data?.steps || [];
+      const next = updater(current);
+      return { ...m, data: { ...(m.data || {}), steps: next } };
+    }));
   };
 
   // Handle approval
   const handleApprove = async () => {
     setAwaitingApproval(false);
     
+    // Show user's response as a message
+    addMessage({
+      role: "user",
+      type: "text",
+      content: "Sounds good"
+    });
+    
+    // Small delay for button animation
+    await delay(200);
+    
+    // Show "Considering next steps..." with thinking
     addMessage({
       role: "system",
       type: "text",
-      content: "Approved. Continuing..."
+      content: "Considering next steps..."
     });
 
-    // Find the approval step and mark complete
-    const approvalStepIndex = currentPlan.findIndex(s => s.requiresApproval);
-    if (approvalStepIndex !== -1) {
-      setCurrentPlan(prev => prev.map((s, idx) => 
-        idx === approvalStepIndex ? { ...s, status: "complete" as const } : s
-      ));
-      
-      await delay(500);
-      
-      // Continue with remaining steps
-      const remainingSteps = currentPlan.slice(approvalStepIndex + 1);
-      if (remainingSteps.length > 0) {
-        executeSteps(currentPlan);
-      } else {
-        showSuccess();
-      }
+    await delay(500);
+    setIsTyping(true);
+    await delay(1200);
+    setIsTyping(false);
+    
+    // Start a new plan container (phase 2) below latest chat bubble
+    const plan2 = addMessage({
+      role: "agent",
+      type: "plan",
+      content: "",
+      thinkingTime: 0,
+      data: { steps: [] }
+    });
+    setPhase2PlanMessageId(plan2.id);
+
+    // Steps 4,5,6 for phase 2
+    const step4 = pendingSteps[0];
+    const step5 = pendingSteps[1];
+    const step6 = pendingSteps[2];
+
+    if (step4) {
+      // Append step 4 and execute
+      updateMessageSteps(plan2.id, prev => [...prev, step4]);
+      await delay(400);
+      await executeStepInMessage(plan2.id, 0, step4.duration || TIMINGS.mediumStep);
+    }
+
+    if (step5) {
+      // Append step 5 (merchant)
+      updateMessageSteps(plan2.id, prev => [...prev, step5]);
+      await delay(400);
+      // Ask for manual confirmation (left bubble), then show actions (right)
+      addMessage({
+        role: "agent",
+        type: "merchant-task",
+        content: "Please open your bank app and check for pending deposits dated Oct 20-21.",
+      });
+      await delay(800);
+      addMessage({
+        role: "user",
+        type: "merchant-actions",
+        content: "",
+      });
+      setAwaitingMerchant(true);
+      return;
+    }
+
+    if (!step5 && step6) {
+      // Append step 6 and execute within plan2
+      updateMessageSteps(plan2.id, prev => [...prev, step6]);
+      await delay(400);
+      await executeStepInMessage(plan2.id, 1, step6.duration || TIMINGS.mediumStep);
+      await showSuccess();
     }
   };
 
@@ -242,35 +351,89 @@ export default function Dashboard() {
   const handleMerchantConfirm = async () => {
     setAwaitingMerchant(false);
     
+    // Show user's response as a message
+    addMessage({
+      role: "user",
+      type: "text",
+      content: "Yep, it's there"
+    });
+    
+    await delay(400);
+    
     addMessage({
       role: "system",
       type: "text",
       content: "Confirmed. Finalizing..."
     });
 
-    // Mark merchant step complete
-    const merchantStepIndex = currentPlan.findIndex(s => s.requiresMerchantAction);
-    if (merchantStepIndex !== -1) {
-      setCurrentPlan(prev => prev.map((s, idx) => 
-        idx === merchantStepIndex ? { ...s, status: "complete" as const } : s
-      ));
-      
-      await delay(500);
-      showSuccess();
+    // Mark merchant step complete in phase 2 (index 1)
+    if (phase2PlanMessageId) {
+      updateMessageSteps(phase2PlanMessageId, prev => prev.map((s, i) => i === 1 ? { ...s, status: "complete" as const } : s));
     }
+    await delay(600);
+
+    // Create final container for step 6 and execute within it
+    const step6 = pendingSteps[2];
+    if (step6) {
+      const plan3 = addMessage({
+        role: "agent",
+        type: "plan",
+        content: "",
+        thinkingTime: 0,
+        data: { steps: [ { ...step6, status: "pending" as const } ] }
+      });
+      await delay(400);
+      // Working
+      updateMessageSteps(plan3.id, prev => prev.map((s, i) => i === 0 ? { ...s, status: "working" as const } : s));
+      await delay(step6.duration || TIMINGS.mediumStep);
+      // Complete
+      updateMessageSteps(plan3.id, prev => prev.map((s, i) => i === 0 ? { ...s, status: "complete" as const } : s));
+      await delay(700);
+    }
+    await showSuccess();
+  };
+
+  // Handle merchant decline (no deposit)
+  const handleMerchantDecline = () => {
+    setAwaitingMerchant(false);
+    addMessage({
+      role: "system",
+      type: "text",
+      content: "No deposit found. We can investigate further or try again later."
+    });
   };
 
   // Show success message
   const showSuccess = async () => {
-    const thinkingTime = getThinkingTime();
-    await delay(thinkingTime);
+    // Add "Troubleshooting steps completed" status
+    addMessage({
+      role: "system",
+      type: "text",
+      content: "Troubleshooting steps completed."
+    });
     
+    // Brief pause before showing final result
+    await delay(1000);
+    setIsTyping(true);
+    
+    const thinkingTime = 2200;
+    await delay(thinkingTime);
+    setIsTyping(false);
+    
+    // Show detailed success message
+    await delay(300);
     addMessage({
       role: "agent",
-      type: "success",
-      content: "Transfer located and successfully requeued. You should see the deposit in your bank account by Oct 22. The delay was caused by weekend processing at your bank.",
-      thinkingTime,
-      data: { thinkingDetails: getThinkingDetails("finalizing") }
+      type: "text",
+      content: "Your missing transfer of $4,719.57 has been successfully processed and is estimated to be deposited on Oct 25."
+    });
+    
+    // Final friendly message
+    await delay(1000);
+    addMessage({
+      role: "agent",
+      type: "text",
+      content: "Is there anything else I can help you with?"
     });
   };
 
@@ -299,92 +462,123 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="flex h-screen bg-black text-white overflow-hidden">
-      {/* Sidebar */}
-      <div className="w-72 bg-[#1a1a1a] flex flex-col border-r border-gray-800">
-        {/* Sidebar Header */}
-        <div className="p-4 border-b border-gray-800">
+    <div className="flex flex-col h-screen bg-black text-gray-900 overflow-hidden">
+      {/* Header */}
+      <header className="bg-black px-6 py-3 flex-shrink-0">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-lg flex items-center justify-center">
-              <span className="text-white text-xl font-bold">🍀</span>
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#224D2E' }}>
+              <Image src="/img/logomark.svg" alt="Logo" width={24} height={24} />
             </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-sm font-semibold text-white truncate">
-                Olympia Greek
-              </h2>
-              <p className="text-xs text-gray-400 truncate">
-                admin@olympiagreek.com
-              </p>
+            <div>
+              <h1 className="text-sm font-semibold text-white">Olympia Greek</h1>
+              <p className="text-xs text-gray-400">admin@olympiagreek.com</p>
             </div>
           </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="rounded-full text-gray-300 border-0 hover:bg-[#404040]"
+              style={{ backgroundColor: '#333333' }}
+            >
+              <span className="text-green-400 mr-1">●</span>
+              Store info
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="rounded-full text-gray-300 border-0 hover:bg-[#404040]"
+              style={{ backgroundColor: '#333333' }}
+            >
+              <span className="text-red-400 mr-1">●</span>
+              Employee info
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="rounded-full text-gray-300 border-0 hover:bg-[#404040]"
+              style={{ backgroundColor: '#333333' }}
+            >
+              <span className="text-green-400 mr-1">●</span>
+              Device info
+            </Button>
+          </div>
         </div>
+      </header>
 
+      {/* Main Container with rounded top corners */}
+      <div className="flex flex-1 bg-white rounded-t-3xl overflow-hidden">
+        {/* Sidebar */}
+        <div className="w-72 bg-white flex flex-col border-r border-gray-200">
         {/* Navigation */}
         <div className="flex-1 overflow-y-auto">
-          <div className="p-4">
-            {!showChat ? (
-              <>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-gray-400">Spaces</span>
-                  <button className="text-gray-400 hover:text-white">
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
+          <div className="p-4 pt-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-gray-500">Spaces</span>
+              <button className="text-gray-500 hover:text-gray-300">
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
 
-                <nav className="space-y-1 mb-6">
-                  {navItems.map((item, idx) => (
-                    <button
-                      key={idx}
-                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                        item.active
-                          ? "bg-[#2a2a2a] text-white font-medium"
-                          : "text-gray-400 hover:bg-[#2a2a2a] hover:text-white"
-                      }`}
-                    >
-                      <item.icon className="w-4 h-4" />
-                      {item.name}
-                    </button>
-                  ))}
-                </nav>
-
-                <div className="mb-2">
-                  <span className="text-xs font-medium text-gray-500">History</span>
-                </div>
-
-                <nav className="space-y-1">
-                  {historyItems.map((item, idx) => (
-                    <button
-                      key={idx}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-[#2a2a2a] hover:text-white transition-colors"
-                    >
-                      <item.icon className="w-4 h-4" />
-                      {item.name}
-                    </button>
-                  ))}
-                </nav>
-              </>
-            ) : (
-              <div className="text-sm text-gray-500">
-                <p className="mb-2">Chat active</p>
+            <nav className="space-y-1 mb-6">
+              {navItems.map((item, idx) => (
                 <button
+                  key={idx}
                   onClick={() => {
-                    setShowChat(false);
-                    setMessages([]);
-                    setCurrentPlan([]);
+                    if (item.name === "Home") {
+                      setShowChat(false);
+                      setInputAtBottom(false);
+                    }
                   }}
-                  className="text-xs text-gray-400 hover:text-white transition-colors"
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+                    item.active && !showChat
+                      ? "bg-gray-100 text-gray-900"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                  }`}
                 >
-                  ← Back to dashboard
+                  <item.icon className="w-4 h-4" />
+                  {item.name}
                 </button>
-              </div>
-            )}
+              ))}
+            </nav>
+
+            <div className="mb-2">
+              <span className="text-xs font-medium text-gray-500">History</span>
+            </div>
+
+            <nav className="space-y-1">
+              {(showChat ? ["Troubleshooting missing transfer", ...historyItems.map(h => h.name)] : historyItems.map(h => h.name)).map((itemName, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    // If clicking "Troubleshooting missing transfer"
+                    if (itemName === "Troubleshooting missing transfer") {
+                      if (showChat && idx === 0) {
+                        return; // Already viewing
+                      }
+                      // Switch to chat view
+                      setShowChat(true);
+                      setInputAtBottom(true);
+                    }
+                  }}
+                  className={`w-full flex items-start px-3 py-2 rounded-md text-sm transition-colors ${
+                    showChat && idx === 0 && itemName === "Troubleshooting missing transfer"
+                      ? "bg-gray-100 text-gray-900"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                  }`}
+                >
+                  {itemName}
+                </button>
+              ))}
+            </nav>
           </div>
         </div>
 
         {/* User Profile */}
-        <div className="p-4 border-t border-gray-800">
+        <div className="p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-600 overflow-hidden">
+            <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
               <img
                 src="https://api.dicebear.com/7.x/avataaars/svg?seed=Matt"
                 alt="User"
@@ -392,89 +586,66 @@ export default function Dashboard() {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white">Matt</p>
-              <p className="text-xs text-gray-400">Owner</p>
+              <p className="text-sm font-medium text-gray-900">Matt</p>
+              <p className="text-xs text-gray-500">Owner</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-black border-b border-gray-800 px-6 py-3 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-lg font-medium text-white">
-                {showChat ? "Troubleshooting: Missing Transfer" : "Home"}
-              </h1>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-none rounded-full"
-              >
-                <span className="text-green-400 mr-2">●</span>
-                Store info
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-none rounded-full"
-              >
-                <span className="text-red-400 mr-2">●</span>
-                Employee info
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-none rounded-full"
-              >
-                <span className="text-green-400 mr-2">●</span>
-                Device info
-              </Button>
-            </div>
-          </div>
-        </header>
-
+      <div className="flex-1 flex flex-col overflow-hidden relative">
         {/* Content Area */}
-        {showChat ? (
-          <ChatContainer
-            messages={messages}
-            isTyping={isTyping}
-            typingStatus={typingStatus}
-            currentPlan={currentPlan}
-            onApprove={awaitingApproval ? handleApprove : undefined}
-            onDecline={awaitingApproval ? handleDecline : undefined}
-            onMerchantConfirm={awaitingMerchant ? handleMerchantConfirm : undefined}
-          />
-        ) : (
-          <main className="flex-1 overflow-y-auto bg-[#0a0a0a] pb-8">
-            <div className="max-w-5xl mx-auto px-8 pt-16">
+        <main className="flex-1 overflow-y-auto bg-white relative z-0">
+          {/* Page Title - Always visible when chat is active */}
+          {showChat && (
+            <div className="border-b border-gray-200 px-8 py-4">
+              <div className="flex items-center justify-between max-w-5xl mx-auto">
+                <h2 className="text-base font-medium text-gray-900">Troubleshooting missing transfer</h2>
+                <div className="flex items-center gap-2">
+                  <button className="text-gray-400 hover:text-gray-600">
+                    <MoreHorizontal className="w-5 h-5" />
+                  </button>
+                  <button className="text-gray-400 hover:text-gray-600">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M10 3v14M3 10h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Dashboard Content - Fades out when chat starts */}
+          <div className={`transition-all duration-500 ${showChat ? 'opacity-0 translate-y-[-20px] pointer-events-none' : 'opacity-100'}`}>
+            <div className="w-[740px] mx-auto px-0 pt-16">
               {/* Main Heading */}
-              <h2 className="text-3xl font-semibold text-white text-center mb-8">
+              <h2 className="text-3xl font-semibold text-gray-900 text-center mb-8">
                 How can we help you run your business?
               </h2>
+            </div>
+          </div>
 
-              {/* Search Bar */}
-              <form onSubmit={handleSearchSubmit} className="bg-[#1a1a1a] rounded-2xl p-4 mb-6 border border-gray-800">
+          {/* Search Input - Animates to bottom */}
+          {!inputAtBottom && (
+            <div className="w-[740px] mx-auto px-0">
+              <form onSubmit={handleSearchSubmit} className="bg-white rounded-[32px] py-5 px-6 mb-8 border border-gray-200 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.35)] transition-all duration-500">
                 <input
                   type="text"
-                  placeholder="Try: 'My transfer is missing' or 'Where is my deposit?'"
+                  placeholder="Ask anything"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-none outline-none text-white placeholder-gray-500 w-full mb-4"
+                  className="bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 w-full text-base mb-5"
                 />
                 <div className="flex items-center gap-3 flex-wrap">
-                  <button type="button" className="w-10 h-10 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-full flex items-center justify-center transition-colors">
-                    <Plus className="w-5 h-5 text-gray-300" />
+                  <button type="button" className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-full flex items-center justify-center transition-colors border border-gray-200">
+                    <Plus className="w-5 h-5 text-gray-600" />
                   </button>
                   <Button
                     type="button"
                     variant="secondary"
                     size="sm"
-                    className="bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-none rounded-full"
+                    className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-full"
                   >
                     New invoice
                   </Button>
@@ -482,7 +653,7 @@ export default function Dashboard() {
                     type="button"
                     variant="secondary"
                     size="sm"
-                    className="bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-none rounded-full"
+                    className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-full"
                   >
                     New menu
                   </Button>
@@ -490,23 +661,28 @@ export default function Dashboard() {
                     type="button"
                     variant="secondary"
                     size="sm"
-                    className="bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-none rounded-full"
+                    className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-full"
                   >
                     View orders
                   </Button>
-                  <button type="button" className="w-10 h-10 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-full flex items-center justify-center transition-colors">
-                    <MoreHorizontal className="w-5 h-5 text-gray-300" />
+                  <button type="button" className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-full flex items-center justify-center transition-colors border border-gray-200">
+                    <MoreHorizontal className="w-5 h-5 text-gray-600" />
                   </button>
                   <div className="flex-1"></div>
-                  <button type="button" className="w-10 h-10 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-full flex items-center justify-center transition-colors">
-                    <Mic className="w-5 h-5 text-gray-300" />
+                  <button type="button" className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-full flex items-center justify-center transition-colors border border-gray-200">
+                    <Mic className="w-5 h-5 text-gray-600" />
                   </button>
-                  <button type="submit" className="w-10 h-10 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-full flex items-center justify-center transition-colors">
-                    <MoveUp className="w-5 h-5 text-gray-300" />
+                  <button type="submit" className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-full flex items-center justify-center transition-colors border border-gray-200">
+                    <MoveUp className="w-5 h-5 text-gray-600" />
                   </button>
                 </div>
               </form>
+            </div>
+          )}
 
+          {/* Dashboard Cards - Fade out when chat starts */}
+          <div className={`transition-all duration-500 ${showChat ? 'opacity-0 translate-y-[-20px] pointer-events-none' : 'opacity-100'}`}>
+            <div className="w-[740px] mx-auto px-0">
               {/* Tabs */}
               <div className="flex gap-2 mb-6">
                 {tabs.map((tab, idx) => (
@@ -514,8 +690,8 @@ export default function Dashboard() {
                     key={idx}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                       idx === 0
-                        ? "bg-[#2a2a2a] text-white"
-                        : "text-gray-400 hover:bg-[#1a1a1a] hover:text-white"
+                        ? "bg-gray-100 text-gray-900"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                     }`}
                   >
                     {tab}
@@ -523,195 +699,188 @@ export default function Dashboard() {
                 ))}
               </div>
 
-              {/* Dashboard Cards */}
-              <div className="space-y-4">
+              {/* Dashboard Cards Container (no vertical spacing around sections) */}
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                 {/* Financial Overview Card */}
-                <div className="bg-[#1a1a1a] rounded-2xl p-6 border border-gray-800 hover:border-gray-700 transition-colors cursor-pointer group">
+                <div className="p-6 transition-colors cursor-pointer group">
                   <div className="flex items-start justify-between mb-6">
                     <div className="flex items-center gap-3">
-                      <Building2 className="w-5 h-5 text-gray-400" />
-                      <h3 className="text-base font-semibold text-white">
+                      <Building2 className="w-5 h-5 text-gray-900" />
+                      <h3 className="text-base font-semibold text-gray-900">
                         Financial overview
                       </h3>
                     </div>
-                    <button className="text-gray-400 group-hover:text-white transition-colors">
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        className="rotate-[-45deg]"
-                      >
-                        <path
-                          d="M5 10h10M10 5l5 5-5 5"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+                    <button className="text-gray-400 group-hover:text-gray-600 transition-colors">
+                      <ChevronRight className="w-5 h-5" />
                     </button>
                   </div>
                   <div className="grid grid-cols-3 gap-6">
                     <div>
-                      <p className="text-2xl font-bold text-white mb-1">
+                      <p className="text-2xl font-bold text-gray-900 mb-1">
                         $5,212.90
                       </p>
-                      <p className="text-sm text-gray-400">In sales today</p>
+                      <p className="text-sm text-gray-600">In sales today</p>
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-white mb-1">
+                      <p className="text-2xl font-bold text-gray-900 mb-1">
                         $21,990.14
                       </p>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-gray-600">
                         In 2 checking accounts
                       </p>
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-white mb-1">
+                      <p className="text-2xl font-bold text-gray-900 mb-1">
                         $922.00
                       </p>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-gray-600">
                         Outgoing payroll today
                       </p>
                     </div>
                   </div>
                 </div>
+                <div className="border-t border-gray-200" />
 
                 {/* Happy Hour Card */}
-                <div className="bg-[#1a1a1a] rounded-2xl p-6 border border-gray-800 hover:border-gray-700 transition-colors cursor-pointer group">
+                <div className="p-6 transition-colors cursor-pointer group">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4 flex-1">
-                      <div className="w-10 h-10 bg-[#2a2a2a] rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Zap className="w-5 h-5 text-yellow-400" />
-                      </div>
+                      <Zap className="w-5 h-5 text-gray-900 flex-shrink-0 mt-0.5" />
                       <div className="flex-1">
-                        <h3 className="text-base font-semibold text-white mb-1">
+                        <h3 className="text-base font-semibold text-gray-900 mb-1">
                           Add a Happy Hour to your restaurant
                         </h3>
-                        <p className="text-sm text-gray-400">
+                        <p className="text-sm text-gray-600">
                           You could benefit from a Happy Hour menu to drive
                           business at slower hours.
                         </p>
                       </div>
-                      <div className="flex items-center gap-4 flex-shrink-0">
-                        <span className="text-4xl">🍻</span>
-                        <button className="text-gray-400 group-hover:text-white transition-colors">
-                          <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 20 20"
-                            fill="none"
-                            className="rotate-[-45deg]"
-                          >
-                            <path
-                              d="M5 10h10M10 5l5 5-5 5"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
+                      <button className="text-gray-400 group-hover:text-gray-600 transition-colors flex-shrink-0">
+                          <ChevronRight className="w-5 h-5" />
                         </button>
-                      </div>
                     </div>
                   </div>
                 </div>
+                <div className="border-t border-gray-200" />
 
                 {/* Daily Cash Snapshot Card */}
-                <div className="bg-[#1a1a1a] rounded-2xl p-6 border border-gray-800 hover:border-gray-700 transition-colors cursor-pointer group">
+                <div className="p-6 transition-colors cursor-pointer group">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4 flex-1">
-                      <div className="w-10 h-10 bg-[#2a2a2a] rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Camera className="w-5 h-5 text-gray-400" />
-                      </div>
+                      <Camera className="w-5 h-5 text-gray-900 flex-shrink-0 mt-0.5" />
                       <div className="flex-1">
-                        <h3 className="text-base font-semibold text-white mb-2">
+                        <h3 className="text-base font-semibold text-gray-900 mb-2">
                           Daily cash snapshot
                         </h3>
-                        <p className="text-sm text-gray-300 leading-relaxed">
+                        <p className="text-sm text-gray-700 leading-relaxed">
                           Good morning! Yesterday&apos;s sales came in at $2,300
                           (about 5% above your usual). Payroll of $4,200 is due
                           Friday. The veggie promo gave lunch a nice +12% boost.
                           No staffing or hardware issues were detected overnight.
                         </p>
                       </div>
-                      <button className="text-gray-400 group-hover:text-white transition-colors flex-shrink-0">
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          className="rotate-[-45deg]"
-                        >
-                          <path
-                            d="M5 10h10M10 5l5 5-5 5"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
+                      <button className="text-gray-400 group-hover:text-gray-600 transition-colors flex-shrink-0">
+                        <ChevronRight className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
                 </div>
+                <div className="border-t border-gray-200" />
 
                 {/* Transaction Summary Card */}
-                <div className="bg-[#1a1a1a] rounded-2xl p-6 border border-gray-800 hover:border-gray-700 transition-colors cursor-pointer group">
+                <div className="p-6 transition-colors cursor-pointer group">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4 flex-1">
-                      <div className="w-10 h-10 bg-[#2a2a2a] rounded-lg flex items-center justify-center flex-shrink-0">
-                        <TrendingDown className="w-5 h-5 text-gray-400" />
-                      </div>
+                      <TrendingDown className="w-5 h-5 text-gray-900 flex-shrink-0 mt-0.5" />
                       <div className="flex-1">
-                        <h3 className="text-base font-semibold text-white mb-2">
+                        <h3 className="text-base font-semibold text-gray-900 mb-2">
                           Transaction summary
                         </h3>
-                        <p className="text-sm text-gray-300">
+                        <p className="text-sm text-gray-700">
                           Yesterday&apos;s sales reached $2,480, about average.
                           The dinner rush had 24 more covers than you usually see
                           on Thursdays.
                         </p>
                       </div>
-                      <button className="text-gray-400 group-hover:text-white transition-colors flex-shrink-0">
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          className="rotate-[-45deg]"
-                        >
-                          <path
-                            d="M5 10h10M10 5l5 5-5 5"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
+                      <button className="text-gray-400 group-hover:text-gray-600 transition-colors flex-shrink-0">
+                        <ChevronRight className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </main>
-        )}
+          </div>
 
-        {/* Input at bottom when chat is active */}
-        {showChat && (
-          <div className="border-t border-gray-800 p-4 bg-black flex-shrink-0 animate-in slide-in-from-bottom duration-400">
-            <div className="max-w-4xl mx-auto">
-              <input
-                type="text"
-                placeholder="Ask anything..."
-                className="w-full bg-[#1a1a1a] border border-gray-800 rounded-full px-6 py-3 text-white placeholder-gray-500 outline-none focus:border-gray-700 transition-colors"
-                disabled
+          {/* Chat Container - Shows when chat starts */}
+          {showChat && (
+            <div className="absolute inset-0 bg-white animate-in fade-in duration-300">
+              <ChatContainer
+                messages={messages}
+                isTyping={isTyping}
+                typingStatus={typingStatus}
+                currentPlan={currentPlan}
+                onApprove={awaitingApproval ? handleApprove : undefined}
+                onDecline={awaitingApproval ? handleDecline : undefined}
+            onMerchantConfirm={awaitingMerchant ? handleMerchantConfirm : undefined}
+            onMerchantDecline={awaitingMerchant ? handleMerchantDecline : undefined}
               />
+            </div>
+          )}
+        </main>
+
+        {/* Input at bottom - Animates in */}
+        {inputAtBottom && (
+          <div 
+            className="absolute bottom-0 left-0 right-0 animate-in slide-in-from-bottom-8 duration-400 z-10"
+            style={{ 
+              paddingTop: '40px',
+              paddingBottom: '32px',
+              paddingLeft: '32px',
+              paddingRight: '32px'
+            }}
+          >
+            {/* Frosted glass backdrop - testing simpler version */}
+            <div 
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                top: '12px',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                background: 'linear-gradient(to bottom, rgba(252, 252, 252, 0) 0px, rgba(252, 252, 252, 0.01) 28px, rgba(252, 252, 252, 0.01) 100%)',
+                zIndex: -1
+              }}
+            />
+            <div className="w-[740px] mx-auto relative">
+              <form onSubmit={handleSearchSubmit} className="bg-white rounded-[32px] py-5 px-6 border border-gray-200 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.35)]">
+                <input
+                  type="text"
+                  placeholder="Ask anything"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 w-full text-base mb-5"
+                  disabled={showChat}
+                />
+                <div className="flex items-center gap-3">
+                  <button type="button" className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-full flex items-center justify-center transition-colors border border-gray-200">
+                    <Plus className="w-5 h-5 text-gray-600" />
+                  </button>
+                  <button type="button" className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-full flex items-center justify-center transition-colors border border-gray-200">
+                    <MoreHorizontal className="w-5 h-5 text-gray-600" />
+                  </button>
+                  <div className="flex-1"></div>
+                  <button type="button" className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-full flex items-center justify-center transition-colors border border-gray-200">
+                    <Mic className="w-5 h-5 text-gray-600" />
+                  </button>
+                  <button type="submit" className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-full flex items-center justify-center transition-colors border border-gray-200">
+                    <MoveUp className="w-5 h-5 text-gray-600" />
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

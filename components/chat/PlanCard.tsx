@@ -1,70 +1,63 @@
 "use client";
 
 import { Step } from "@/lib/chat-types";
-import { ArrowRight, Check, Loader2, X } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 
 interface PlanCardProps {
   steps: Step[];
 }
 
 export function PlanCard({ steps }: PlanCardProps) {
-  const getStepIcon = (status: Step["status"]) => {
+  const getStepClasses = (status: Step["status"]) => {
     switch (status) {
       case "working":
-        return <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />;
+        return "border-gray-300 bg-gradient-to-r from-gray-50 via-white to-gray-50 animate-gradient";
       case "complete":
-        return <Check className="w-4 h-4 text-green-400 animate-in zoom-in duration-300" />;
+        return "border-gray-200 bg-white";
       case "failed":
-        return <X className="w-4 h-4 text-red-400" />;
+        return "border-gray-300 bg-gray-50";
       default:
-        return <ArrowRight className="w-4 h-4 text-gray-600" />;
-    }
-  };
-
-  const getStepColor = (status: Step["status"]) => {
-    switch (status) {
-      case "working":
-        return "border-blue-500/30 bg-blue-900/10";
-      case "complete":
-        return "border-green-500/30 bg-green-900/10";
-      case "failed":
-        return "border-red-500/30 bg-red-900/10";
-      default:
-        return "border-gray-800 bg-transparent";
+        return "border-gray-200 bg-white";
     }
   };
 
   return (
-    <div className="bg-[#1a1a1a] rounded-2xl p-5 border border-gray-800 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <h3 className="text-sm font-semibold text-white mb-4">Troubleshooting Plan</h3>
-      <div className="space-y-3">
+    <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="space-y-2">
         {steps.map((step, idx) => (
           <div
             key={step.id}
-            className={`p-3 rounded-lg border transition-all duration-300 ${getStepColor(step.status)} animate-in fade-in slide-in-from-left-2`}
-            style={{ animationDelay: `${idx * 100}ms` }}
+            className={`p-3 rounded-lg border transition-all duration-500 ease-out ${getStepClasses(step.status)} animate-in fade-in slide-in-from-top-2`}
+            style={{ 
+              animationDelay: `${idx * 150}ms`,
+              backgroundSize: step.status === "working" ? "200% 100%" : "100% 100%"
+            }}
           >
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-0.5">
-                {getStepIcon(step.status)}
+              <div className="flex-shrink-0 transition-all duration-400 ease-out">
+                {step.status === "complete" ? (
+                  <div className="w-6 h-6 rounded-full bg-gray-900 flex items-center justify-center animate-in zoom-in duration-500 ease-out">
+                    <Check className="w-3.5 h-3.5 text-white" />
+                  </div>
+                ) : step.status === "working" ? (
+                  <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center border border-gray-300 shadow-sm">
+                    <Loader2 className="w-3.5 h-3.5 text-gray-900 animate-spin" style={{ animationDuration: '0.8s' }} />
+                  </div>
+                ) : (
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-50 text-xs font-medium text-gray-500 border border-gray-200 transition-all duration-300">
+                    {step.number}
+                  </span>
+                )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-mono text-gray-500">Step {step.number}</span>
-                  <h4 className="text-sm font-medium text-white">{step.title}</h4>
-                </div>
-                <p className="text-xs text-gray-400 leading-relaxed">
+                <h4 className="text-sm font-medium text-gray-900 mb-0.5 transition-all duration-300">
+                  {step.title}
+                </h4>
+                <p className="text-xs text-gray-500 leading-relaxed transition-all duration-300">
                   {step.status === "working" ? step.description : 
                    step.status === "complete" && step.result ? step.result : 
                    step.description}
                 </p>
-                
-                {/* Progress bar for working state */}
-                {step.status === "working" && (
-                  <div className="mt-2 w-full h-1 bg-gray-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500 animate-pulse" style={{ width: '60%' }} />
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -73,4 +66,3 @@ export function PlanCard({ steps }: PlanCardProps) {
     </div>
   );
 }
-

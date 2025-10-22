@@ -13,22 +13,37 @@ export function ChatMessage({ message, index }: ChatMessageProps) {
   const isSystem = message.role === "system";
   
   if (isSystem) {
+    const isDraftingPlan = message.content.toLowerCase().includes("drafting a plan");
+    const isPlanDrafted = message.content.toLowerCase().includes("plan drafted") || message.content.toLowerCase().includes("plan complete");
+    
     return (
       <div 
-        className="flex justify-center my-2 animate-in fade-in slide-in-from-bottom-2 duration-200"
-        style={{ animationDelay: `${index * 100}ms` }}
+        className="flex justify-start my-3 animate-in fade-in slide-in-from-left-2 duration-300"
+        style={{ animationDelay: `${index * 80}ms` }}
       >
-        <span className="text-sm text-gray-500 italic">{message.content}</span>
+        <p className={`text-sm italic flex items-center ${
+          isDraftingPlan || isPlanDrafted
+            ? 'text-gray-600' 
+            : 'text-gray-500'
+        }`}>
+          {isDraftingPlan ? (
+            <span className='animate-text-shimmer font-medium'>Drafting a plan...</span>
+          ) : isPlanDrafted ? (
+            <span className='font-medium'>Plan complete.</span>
+          ) : (
+            <span>{message.content}</span>
+          )}
+        </p>
       </div>
     );
   }
 
   return (
     <div 
-      className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 animate-in fade-in slide-in-from-bottom-3 duration-200`}
-      style={{ animationDelay: `${index * 100}ms` }}
+      className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 animate-in fade-in slide-in-from-${isUser ? 'right' : 'left'}-3 duration-300`}
+      style={{ animationDelay: `${index * 80}ms` }}
     >
-      <div className={`max-w-[80%] ${isUser ? 'items-end' : 'items-start'} flex flex-col gap-2`}>
+      <div className={`max-w-[85%] ${isUser ? 'items-end' : 'items-start'} flex flex-col gap-2`}>
         {/* Thinking badge for agent messages */}
         {!isUser && message.thinkingTime && (
           <ThinkingBadge 
@@ -39,10 +54,10 @@ export function ChatMessage({ message, index }: ChatMessageProps) {
         
         {/* Message bubble */}
         <div
-          className={`px-4 py-3 rounded-2xl ${
+          className={`px-4 py-2.5 rounded-[32px] transition-all duration-200 ${
             isUser
-              ? 'bg-[#2a2a2a] text-white rounded-br-sm'
-              : 'bg-[#1a1a1a] text-gray-200 border border-gray-800 rounded-bl-sm'
+              ? 'bg-black text-white'
+              : 'bg-gray-100 text-gray-900'
           }`}
         >
           <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>

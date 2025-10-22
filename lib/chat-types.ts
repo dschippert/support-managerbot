@@ -4,6 +4,8 @@ export type MessageType =
   | "plan" 
   | "step-update" 
   | "approval-request" 
+  | "approval-actions"
+  | "merchant-actions"
   | "merchant-task" 
   | "success" 
   | "thinking";
@@ -43,19 +45,19 @@ export const createInitialSteps = (): Step[] => [
   {
     id: "verify-bank",
     number: 1,
-    title: "Verify linked bank",
+    title: "Verify linked bank account",
     description: "Checking your bank connection health and authentication...",
     status: "pending",
-    duration: 1500,
+    duration: 2200,
     result: "Bank connected • First National Bank"
   },
   {
     id: "check-transfers",
     number: 2,
     title: "Review recent transfers",
-    description: "Comparing settlement queue with bank's pending deposits...",
+    description: "Comparing settlement queue with bank's pending depo...",
     status: "pending",
-    duration: 2500,
+    duration: 2800,
     result: "Found 3 transfers in past 7 days"
   },
   {
@@ -64,14 +66,14 @@ export const createInitialSteps = (): Step[] => [
     title: "Check processing windows",
     description: "Analyzing weekend, holiday, and bank-specific delays...",
     status: "pending",
-    duration: 2000,
+    duration: 2400,
     result: "Weekend delay detected"
   },
   {
     id: "requeue-transfer",
     number: 4,
     title: "Requeue the transfer",
-    description: "Submit a re-disbursement request for the missing transfer",
+    description: "Submitting a request to attempt the transfer again...",
     status: "pending",
     requiresApproval: true,
     result: "Transfer requeue initiated"
@@ -80,10 +82,19 @@ export const createInitialSteps = (): Step[] => [
     id: "merchant-confirm",
     number: 5,
     title: "Merchant bank confirmation",
-    description: "Please check your bank app for pending deposits",
+    description: "Manual step required: open bank app and confirm pending...",
     status: "pending",
     requiresMerchantAction: true,
     result: "Deposit confirmed by merchant"
+  },
+  {
+    id: "resolution",
+    number: 6,
+    title: "Resolution summary",
+    description: "Transfer requeued. Estimated deposit on Oct 25.",
+    status: "pending",
+    duration: 0,
+    result: "Resolution complete"
   }
 ];
 
