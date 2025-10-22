@@ -502,7 +502,7 @@ export default function Dashboard() {
       addMessage({
         role: "agent",
         type: "text",
-        content: "I checked your bank's ACH processing schedule. First National Bank's cutoff for same-day ACH is 2:00 PM ET on weekdays. Transfers submitted after that time are processed the next business day."
+        content: "I checked your bank's ACH processing schedule. First National Bank's cutoff for same-day ACH is 2:00 PM ET on Fridays. Since your original transfer was submitted at 3:45 PM on Friday, it missed the cutoff and was automatically reversed. Any transfers submitted before 2:00 PM on Friday would have been processed that same day."
       });
     } else {
       // Generic response for other questions
