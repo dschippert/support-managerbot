@@ -442,7 +442,27 @@ export default function Dashboard() {
     e.preventDefault();
     const query = searchQuery.toLowerCase();
     
-    if (query.includes("transfer") || query.includes("missing") || query.includes("deposit") || query.includes("payment")) {
+    if (query.includes("transfer") || 
+        query.includes("missing") || 
+        query.includes("deposit") || 
+        query.includes("payment") ||
+        query.includes("where") && query.includes("money") ||
+        query.includes("wheres my money") ||
+        query.includes("where's my money") ||
+        query.includes("funds") ||
+        query.includes("payout") ||
+        query.includes("settlement") ||
+        query.includes("ach") ||
+        query.includes("direct deposit") ||
+        query.includes("bank account") && (query.includes("not") || query.includes("missing")) ||
+        query.includes("didn't receive") ||
+        query.includes("didnt receive") ||
+        query.includes("haven't received") ||
+        query.includes("havent received") ||
+        query.includes("not arrived") ||
+        query.includes("hasn't arrived") ||
+        query.includes("hasnt arrived") ||
+        query.includes("delayed")) {
       startConversation();
     }
   };
