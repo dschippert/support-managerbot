@@ -28,6 +28,7 @@ import {
 import { Message, Step, createInitialSteps } from "@/lib/chat-types";
 import { getThinkingTime, getThinkingDetails, TIMINGS } from "@/lib/animation-config";
 import { ChatContainer } from "@/components/chat/ChatContainer";
+import { DemoInstructions } from "@/components/DemoInstructions";
 import Image from "next/image";
 
 export default function Dashboard() {
@@ -44,6 +45,7 @@ export default function Dashboard() {
   const [awaitingMerchant, setAwaitingMerchant] = useState(false);
   const [inputAtBottom, setInputAtBottom] = useState(false);
   const [conversationComplete, setConversationComplete] = useState(false);
+  const [instructionsOpen, setInstructionsOpen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const navItems = [
@@ -568,7 +570,12 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="flex flex-col h-screen bg-black text-gray-900 overflow-hidden">
+    <>
+      <DemoInstructions onToggle={setInstructionsOpen} />
+      <div 
+        className="flex flex-col h-screen bg-black text-gray-900 overflow-hidden transition-all duration-300 ease-in-out"
+        style={{ marginLeft: instructionsOpen ? '360px' : '64px' }}
+      >
       {/* Header */}
       <header className="bg-black px-6 py-3 flex-shrink-0">
         <div className="flex items-center justify-between">
@@ -989,5 +996,6 @@ export default function Dashboard() {
       </div>
       </div>
     </div>
+    </>
   );
 }
