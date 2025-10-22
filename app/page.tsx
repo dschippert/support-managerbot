@@ -451,8 +451,32 @@ export default function Dashboard() {
   const handleFollowUpQuestion = async (question: string) => {
     const query = question.toLowerCase();
     
+    // Check if it's an acknowledgment/thanks
+    if (query.includes("thank") || 
+        query.includes("thanks") ||
+        query.includes("appreciate") ||
+        query.includes("got it") ||
+        query.includes("perfect") ||
+        query.includes("great") ||
+        query.includes("helpful") ||
+        query.includes("awesome")) {
+      
+      // Add user message
+      addMessage({
+        role: "user",
+        type: "text",
+        content: question
+      });
+      
+      await delay(800);
+      addMessage({
+        role: "agent",
+        type: "text",
+        content: "Happy to help! Just so you know—larger banks typically process late transfers the next business day, but smaller banks sometimes handle it differently. They might reverse the transfer entirely or charge a fee for expedited processing. Good thing First National is pretty straightforward about their cutoffs. Let me know if you need anything else!"
+      });
+    }
     // Check if it's a cutoff/processing time question
-    if (query.includes("cutoff") || 
+    else if (query.includes("cutoff") || 
         query.includes("deadline") ||
         query.includes("processing time") ||
         query.includes("processing hours") ||
