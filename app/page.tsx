@@ -45,6 +45,7 @@ export default function Dashboard() {
   const [awaitingMerchant, setAwaitingMerchant] = useState(false);
   const [inputAtBottom, setInputAtBottom] = useState(false);
   const [conversationComplete, setConversationComplete] = useState(false);
+  const [conversationStarted, setConversationStarted] = useState(false);
   const [instructionsOpen, setInstructionsOpen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -81,6 +82,9 @@ export default function Dashboard() {
 
   // Main conversation orchestration
   const startConversation = async () => {
+    // Mark that conversation has been started (for history persistence)
+    setConversationStarted(true);
+    
     // First animate the input to bottom
     setInputAtBottom(true);
     
@@ -661,7 +665,7 @@ export default function Dashboard() {
             </div>
 
             <nav className="space-y-1">
-              {(showChat ? ["Troubleshooting missing transfer", ...historyItems.map(h => h.name)] : historyItems.map(h => h.name)).map((itemName, idx) => (
+              {(conversationStarted ? ["Troubleshooting missing transfer", ...historyItems.map(h => h.name)] : historyItems.map(h => h.name)).map((itemName, idx) => (
                 <button
                   key={idx}
                   onClick={() => {
