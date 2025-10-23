@@ -737,7 +737,7 @@ export default function Dashboard() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden relative">
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto bg-white relative z-0">
+        <main className="flex-1 overflow-y-auto bg-white relative z-0 rounded-tr-3xl" style={{ overflow: showChat ? 'hidden' : 'auto' }}>
           {/* Page Title - Always visible when chat is active */}
           {showChat && (
             <div className="border-b border-gray-200 px-8 py-4">
@@ -955,7 +955,7 @@ export default function Dashboard() {
 
           {/* Chat Container - Shows when chat starts */}
           {showChat && (
-            <div className="absolute inset-0 bg-white animate-in fade-in duration-300">
+            <div className="absolute inset-0 bg-white animate-in fade-in duration-300 rounded-tr-3xl flex flex-col">
               <ChatContainer
                 messages={messages}
                 isTyping={isTyping}

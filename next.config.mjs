@@ -1,15 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',
+  basePath: '/sites/support-managerbot',
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'raw.githubusercontent.com',
-        pathname: '/dschippert/support-managerbot/**',
-      },
-    ],
+    unoptimized: true,
   },
 };
 
 export default nextConfig;
-
