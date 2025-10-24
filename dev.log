@@ -1,0 +1,28 @@
+
+> managerbot-support@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.13
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+SyntaxError: Unexpected token '<', "
+<!DOCTYPE "... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at parseJSONFromBytes (node:internal/deps/undici/undici:5472:19)
+    at successSteps (node:internal/deps/undici/undici:5454:27)
+    at fullyReadBody (node:internal/deps/undici/undici:4381:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async consumeBody (node:internal/deps/undici/undici:5463:7)
+    at async getVersionInfo (/Users/dschippert/Desktop/managerbot_support/node_modules/next/dist/server/dev/hot-reloader-webpack.js:224:36)
+    at async Span.traceAsyncFn (/Users/dschippert/Desktop/managerbot_support/node_modules/next/dist/trace/trace.js:154:20)
+    at async HotReloaderWebpack.start (/Users/dschippert/Desktop/managerbot_support/node_modules/next/dist/server/dev/hot-reloader-webpack.js:611:28)
+    at async startWatcher (/Users/dschippert/Desktop/managerbot_support/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js:156:5)
+ ✓ Ready in 1070ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 703ms (450 modules)
+ GET / 404 in 783ms
+ ✓ Compiled in 120ms (436 modules)
+ GET / 404 in 68ms
+ HEAD / 404 in 8ms
+[?25h

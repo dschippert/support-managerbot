@@ -72,8 +72,8 @@ export function ChatContainer({
         if (message.type === "approval-request") {
           return (
             <div key={message.id} className="flex justify-start mb-4 animate-in fade-in slide-in-from-left-3 duration-300">
-              <div className="max-w-[85%]">
-                <div className="bg-gray-100 text-gray-900 rounded-[32px] px-5 py-4">
+              <div style={{ maxWidth: 'calc(85% - 100px)' }}>
+                <div className="bg-gray-100 text-gray-900 rounded-[24px] px-5 py-4">
                   <ApprovalPrompt
                     title=""
                     description={message.content}
@@ -117,7 +117,7 @@ export function ChatContainer({
           return (
             <div key={message.id} className="flex justify-start mb-4 animate-in fade-in slide-in-from-left-3 duration-300">
               <div className="max-w-[85%]">
-                <div className="bg-gray-100 text-gray-900 rounded-[32px] px-5 py-4">
+                <div className="bg-gray-100 text-gray-900 rounded-[24px] px-5 py-4">
                   <p className="text-sm text-gray-900 leading-relaxed">{message.content}</p>
                 </div>
               </div>
@@ -181,7 +181,7 @@ export function ChatContainer({
             <p className="text-sm text-gray-500 italic text-left mb-2">{typingStatus}</p>
           )}
           <div className="flex justify-start">
-            <div className="bg-gray-100 px-4 py-2.5 rounded-[32px]">
+            <div className="bg-gray-100 px-4 py-2.5 rounded-[24px]">
               <TypingIndicator />
             </div>
           </div>

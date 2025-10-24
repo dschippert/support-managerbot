@@ -54,7 +54,7 @@ export function ChatMessage({ message, index }: ChatMessageProps) {
         
         {/* Message bubble */}
         <div
-          className={`px-4 py-2.5 rounded-[32px] transition-all duration-200 ${
+          className={`px-4 py-2.5 rounded-[24px] transition-all duration-200 ${
             isUser
               ? 'bg-black text-white'
               : 'bg-gray-100 text-gray-900'

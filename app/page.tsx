@@ -24,6 +24,7 @@ import {
   Camera,
   TrendingDown,
   ChevronRight,
+  AlertCircle,
 } from "lucide-react";
 import { Message, Step, createInitialSteps } from "@/lib/chat-types";
 import { getThinkingTime, getThinkingDetails, TIMINGS } from "@/lib/animation-config";
@@ -81,7 +82,7 @@ export default function Dashboard() {
   };
 
   // Main conversation orchestration
-  const startConversation = async () => {
+  const startConversation = async (initialMessage?: string) => {
     // Mark that conversation has been started (for history persistence)
     setConversationStarted(true);
     
@@ -97,7 +98,7 @@ export default function Dashboard() {
     addMessage({
       role: "user",
       type: "text",
-      content: searchQuery,
+      content: initialMessage || searchQuery,
     });
 
     // Clear input but keep at bottom
@@ -175,7 +176,7 @@ export default function Dashboard() {
     addMessage({
       role: "agent",
       type: "approval-request",
-      content: "This transfer missed your bank's Friday cutoff, so it was automatically reversed. I can start a new ACH to get it back on track.",
+      content: "Ah, I see the problem! This transfer missed your bank's Friday cutoff, so it was automatically reversed:",
     });
     // Delay, then show action buttons as a separate right-aligned message
     await delay(800);
@@ -882,18 +883,22 @@ export default function Dashboard() {
                 </div>
                 <div className="border-t border-gray-200" />
 
-                {/* Happy Hour Card */}
-                <div className="p-6 transition-colors cursor-pointer group">
+                {/* Missing Transfer Card */}
+                <div 
+                  className="p-6 transition-colors cursor-pointer group hover:bg-gray-50"
+                  onClick={() => {
+                    startConversation("Help troubleshoot missing transfer");
+                  }}
+                >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4 flex-1">
-                      <Zap className="w-5 h-5 text-gray-900 flex-shrink-0 mt-0.5" />
+                      <AlertCircle className="w-5 h-5 text-gray-900 flex-shrink-0 mt-0.5" />
                       <div className="flex-1">
                         <h3 className="text-base font-semibold text-gray-900 mb-1">
-                          Add a Happy Hour to your restaurant
+                          Bank transfer reversed
                         </h3>
                         <p className="text-sm text-gray-600">
-                          You could benefit from a Happy Hour menu to drive
-                          business at slower hours.
+                          A recent transfer didn't go through. Let's troubleshoot what happened and get it resolved.
                         </p>
                       </div>
                       <button className="text-gray-400 group-hover:text-gray-600 transition-colors flex-shrink-0">
