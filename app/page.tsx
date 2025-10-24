@@ -898,7 +898,7 @@ export default function Dashboard() {
                           Bank transfer reversed
                         </h3>
                         <p className="text-sm text-gray-600">
-                          A recent transfer didn't go through. Let's troubleshoot what happened and get it resolved.
+                          We noticed a recent transfer didn't go through. Let's requeue that transfer for you.
                         </p>
                       </div>
                       <button className="text-gray-400 group-hover:text-gray-600 transition-colors flex-shrink-0">
