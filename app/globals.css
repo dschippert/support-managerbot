@@ -1,3 +1,36 @@
+/* CashSans Font Family */
+@font-face {
+  font-family: 'CashSans';
+  src: url('https://raw.githubusercontent.com/kasiaabedkowski/CashSans/main/CashSans-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CashSans';
+  src: url('https://raw.githubusercontent.com/kasiaabedkowski/CashSans/main/CashSans-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CashSans';
+  src: url('https://raw.githubusercontent.com/kasiaabedkowski/CashSans/main/CashSans-Semibold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CashSans';
+  src: url('https://raw.githubusercontent.com/kasiaabedkowski/CashSans/main/CashSans-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -65,6 +98,49 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .animate-gradient {
+    animation: gradient-shift 3s ease infinite;
+  }
+
+  @keyframes text-shimmer {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+
+  .animate-text-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgb(107 114 128) 0%,
+      rgb(55 65 81) 25%,
+      rgb(107 114 128) 50%,
+      rgb(55 65 81) 75%,
+      rgb(107 114 128) 100%
+    );
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: text-shimmer 2s linear infinite;
   }
 }
 
